@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos customizados para o tema EGP */
+.table-header {
+  @apply bg-pink-500 text-white font-semibold;
+}
+
+.status-em-producao {
+  @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm;
+}
+
+.status-em-atraso {
+  @apply bg-red-100 text-red-800 px-2 py-1 rounded text-sm;
+}
+
+.status-saiu {
+  @apply bg-green-100 text-green-800 px-2 py-1 rounded text-sm;
+}
+
+.btn-primary {
+  @apply bg-pink-500 text-white px-4 py-2 rounded hover:from-egp-pink-600 hover:to-egp-blue-600 transition-all;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-all;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
