@@ -20,6 +20,7 @@ const ProdutosPorPedido: React.FC = () => {
     try {
       setLoading(true);
       const response = await pedidosApi.buscarProdutosPedido(id!);
+      console.log(response)
       setProdutos(response);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
@@ -33,6 +34,15 @@ const ProdutosPorPedido: React.FC = () => {
       carregarProdutos();
     }
   }, [id, carregarProdutos]);
+
+  const removerProduto = async (produtoId: string) => {
+    try {
+      await pedidosApi.removerProduto(id!, produtoId);
+      carregarProdutos();
+    } catch (error) {
+      console.error('Erro ao remover produto:', error);
+    }
+  }
 
   const adicionarProduto = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +74,7 @@ const ProdutosPorPedido: React.FC = () => {
             <p className="text-gray-600">Pedido #{id}</p>
           </div>
         </div>
-        
+
         {isAuthenticated && (
           <button
             onClick={() => setShowForm(true)}
@@ -133,7 +143,7 @@ const ProdutosPorPedido: React.FC = () => {
             Produtos do Pedido
           </h2>
         </div>
-        
+
         {loading ? (
           <div className="p-8 text-center text-gray-500">
             Carregando produtos...
@@ -189,6 +199,7 @@ const ProdutosPorPedido: React.FC = () => {
                         <button
                           className="text-red-600 hover:text-red-900"
                           title="Remover produto"
+                          onClick={() => removerProduto(produto._id!)}
                         >
                           <Trash2 size={16} />
                         </button>

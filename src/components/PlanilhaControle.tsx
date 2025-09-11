@@ -9,6 +9,7 @@ import {
   Search,
   Plus,
   Edit,
+  Trash,
   Package,
   ChevronLeft,
   ChevronRight,
@@ -83,6 +84,14 @@ const PlanilhaControle: React.FC = () => {
       aplicarFiltro(column, value);
     } else {
       carregarPedidos();
+    }
+  };
+  const deletarPedido = async (pedidoId: string) => {
+    try {
+      await pedidosApi.excluirPedido(pedidoId);
+      carregarPedidos();
+    } catch (error) {
+      console.error('Erro ao deletar pedido:', error);
     }
   };
 
@@ -321,13 +330,23 @@ const PlanilhaControle: React.FC = () => {
                           <Package size={16} />
                         </Link>
                         {isAuthenticated && (
-                          <button
-                            onClick={() => setEditingPedido(pedido)}
-                            className="p-1 text-egp-pink-600 hover:bg-egp-pink-100 rounded"
-                            title="Editar pedido"
-                          >
-                            <Edit size={16} />
-                          </button>
+                          <>
+
+                            <button
+                              onClick={() => setEditingPedido(pedido)}
+                              className="p-1 text-egp-pink-600 hover:bg-egp-pink-100 rounded"
+                              title="Editar pedido"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deletarPedido(pedido._id || '')}
+                              className="p-1 text-red-600 hover:bg-red-100 rounded"
+                              title="Excluir pedido"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>

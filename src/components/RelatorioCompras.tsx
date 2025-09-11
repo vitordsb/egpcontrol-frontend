@@ -16,6 +16,7 @@ const RelatorioCompras: React.FC = () => {
     try {
       setLoading(true);
       const response = await pedidosApi.buscarRelatorioCompras();
+      console.log(response)
       setRelatorio(response);
     } catch (error) {
       console.error('Erro ao carregar relatório:', error);
@@ -55,7 +56,7 @@ const RelatorioCompras: React.FC = () => {
       'RESUMO DE PRODUTOS PARA COMPRA:',
       '-'.repeat(50),
       '',
-      ...relatorio.map(item => 
+      ...relatorio.map(item =>
         `${item.nome.padEnd(30)} | Qtd: ${item.quantidadeTotal.toString().padStart(5)} | Pedidos: ${item.numeroPedidos}`
       ),
       '',
@@ -96,7 +97,7 @@ const RelatorioCompras: React.FC = () => {
             <p className="text-gray-600">Resumo de produtos para compra</p>
           </div>
         </div>
-        
+
         <div className="flex space-x-3">
           <button
             onClick={exportarTXT}
@@ -126,7 +127,7 @@ const RelatorioCompras: React.FC = () => {
             <Package size={40} className="text-pink-200" />
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-r from-egp-blue-500 to-egp-blue-600 text-white p-6 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
@@ -136,7 +137,7 @@ const RelatorioCompras: React.FC = () => {
             <ShoppingCart size={40} className="text-blue-200" />
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
@@ -156,7 +157,7 @@ const RelatorioCompras: React.FC = () => {
             Lista de Produtos para Compra
           </h2>
         </div>
-        
+
         {loading ? (
           <div className="p-8 text-center text-gray-500">
             Carregando relatório...
