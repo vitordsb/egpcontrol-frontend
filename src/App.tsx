@@ -14,7 +14,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Header />
-          <main className="container mx-auto px-4 py-6">
+          <main className="container max-w-full px-10 py-6">
             <Routes>
               <Route path="/" element={<PlanilhaControle />} />
               <Route path="/login" element={<Login />} />

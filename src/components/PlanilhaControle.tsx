@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { pedidosApi } from '../services/api';
@@ -47,12 +47,29 @@ const PlanilhaControle: React.FC = () => {
     transportadora: ''
   });
 
+  //helper mostrar pedido mais atrasado até o menos atrasado
+  const pedidoMaisAtrasado = useMemo(() => {
+    if (!pedidos || pedidos.length === 0) return null;
+    return [...pedidos].sort((a, b) => {
+      const dataAtrasoA = new Date(a.dataPrevista);
+      const dataAtrasoB = new Date(b.dataPrevista);
+      return dataAtrasoA.getTime() - dataAtrasoB.getTime(); // do mais antigo para o mais atrasado
+    })[0];
+  }, [pedidos]);
+
   const carregarPedidos = useCallback(async () => {
     try {
       setLoading(true);
       const response = await pedidosApi.buscarPedidos(currentPage, 7);
       console.log(response.pedidos)
-      setPedidos(response.pedidos);
+
+      const pedidosOrdenados = [...response.pedidos].sort((a, b) => {
+        const dataA = new Date(a.dataPrevista).getTime();
+        const dataB = new Date(b.dataPrevista).getTime();
+        return dataA - dataB;
+      });
+
+      setPedidos(pedidosOrdenados);
       setTotalPages(response.totalPages);
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
@@ -166,6 +183,12 @@ const PlanilhaControle: React.FC = () => {
           </div>
         )}
       </div>
+      {pedidoMaisAtrasado && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+          Pedido mais atrasado: <strong>{pedidoMaisAtrasado.numeroPedido}</strong>
+          — previsto para {format(new Date(pedidoMaisAtrasado.dataPrevista), 'dd/MM/yyyy', { locale: ptBR })}
+        </div>
+      )}
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -247,7 +270,7 @@ const PlanilhaControle: React.FC = () => {
                   </div>
                 </th>
                 <th className="px-4 py-3 text-left">Data Prevista</th>
-                <th className="px-10 py-3 text-left">Situação</th>
+                <th className="px-20 py-3 text-left">Situação</th>
                 <th className="px-4 py-3 text-left">
                   <div className="space-y-2">
                     <span>Data Saída</span>
