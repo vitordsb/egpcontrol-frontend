@@ -247,7 +247,7 @@ const PlanilhaControle: React.FC = () => {
                   </div>
                 </th>
                 <th className="px-4 py-3 text-left">Data Prevista</th>
-                <th className="px-4 py-3 text-left">Situação</th>
+                <th className="px-10 py-3 text-left">Situação</th>
                 <th className="px-4 py-3 text-left">
                   <div className="space-y-2">
                     <span>Data Saída</span>
@@ -392,15 +392,17 @@ const PlanilhaControle: React.FC = () => {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="p-2 flex items-center rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
               >
                 <ChevronLeft size={16} />
+                Voltar
               </button>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="p-2 bg-pink-500 text-white flex items-center rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-pink-600"
               >
+                Avançar
                 <ChevronRight size={16} />
               </button>
             </div>
