@@ -104,7 +104,15 @@ const PlanilhaControle: React.FC = () => {
       console.error('Erro ao atualizar status:', error);
     }
   };
-
+  const handleUploadXml = async (file: File) => {
+    try {
+      const response = await pedidosApi.enviarXML(file);
+      console.log(response);
+      carregarPedidos();
+    } catch (error) {
+      console.error("Erro ao importar XML:", error);
+    }
+  };
   const getStatusIcon = (status: string) => {
     if (status.includes('Saiu')) {
       return <CheckCircle className="text-green-600" size={16} />;
@@ -133,8 +141,7 @@ const PlanilhaControle: React.FC = () => {
           Controle de Expedição
         </h1>
         {isAuthenticated && (
-          <>
-
+          <div className="flex items-center space-x-4">
             <button
               onClick={() => setShowNewPedidoForm(true)}
               className="btn-primary flex items-center space-x-2"
@@ -142,28 +149,21 @@ const PlanilhaControle: React.FC = () => {
               <Plus size={18} />
               <span>Novo Pedido</span>
             </button>
-            <input
-              type="file"
-              accept=".xml"
-              onChange={async (e) => {
-                if (e.target.files?.length) {
-                  const formData = new FormData();
-                  formData.append("file", e.target.files[0]);
-                  const token = localStorage.getItem("token");
-
-                  await fetch("http://localhost:5000/api/pedidos/upload-xml", {
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                  });
-
-                  carregarPedidos();
-                }
-              }}
-            />
-          </>
+            <label className="flex items-center space-x-2 cursor-pointer px-4 py-2 rounded-md text-white font-medium shadow-md bg-pink-500 hover:opacity-90 transition">
+              <Plus size={18} />
+              <span>Importar XML</span>
+              <input
+                type="file"
+                accept=".xml"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files?.length) {
+                    handleUploadXml(e.target.files[0]);
+                  }
+                }}
+              />
+            </label>
+          </div>
         )}
       </div>
 

@@ -77,6 +77,12 @@ export const pedidosApi = {
   buscarRelatorioCompras: async (): Promise<RelatorioCompra[]> => {
     const response = await api.get('/relatorio-compras');
     return response.data;
+  },
+  enviarXML: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/pedidos/upload-xml', formData);
+    return response.data;
   }
 };
 

@@ -7,10 +7,19 @@ import { ArrowLeft, Download, Package, FileText, ShoppingCart } from 'lucide-rea
 const RelatorioCompras: React.FC = () => {
   const [relatorio, setRelatorio] = useState<RelatorioCompra[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     carregarRelatorio();
   }, []);
+
+  const totalPages = Math.ceil(relatorio.length / itemsPerPage);
+
+  const relatorioPaginado = relatorio.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const carregarRelatorio = async () => {
     try {
@@ -151,7 +160,7 @@ const RelatorioCompras: React.FC = () => {
 
       {/* Tabela do relatório */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-egp-pink-500 to-egp-blue-500 text-white">
+        <div className="px-6 py-4 bg-gray-500 text-white">
           <h2 className="text-xl font-semibold flex items-center">
             <ShoppingCart className="mr-2" size={20} />
             Lista de Produtos para Compra
@@ -191,10 +200,10 @@ const RelatorioCompras: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {relatorio.map((item, index) => (
+                {relatorioPaginado.map((item, index) => (
                   <tr key={item.nome} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {index + 1}
+                      {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {item.nome}
@@ -217,6 +226,29 @@ const RelatorioCompras: React.FC = () => {
           </div>
         )}
       </div>
+      {totalPages > 1 && (
+        <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            Página {currentPage} de {totalPages}
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              Próxima
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Resumo final */}
       {relatorio.length > 0 && (
