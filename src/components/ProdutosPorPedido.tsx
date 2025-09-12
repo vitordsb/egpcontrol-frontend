@@ -13,14 +13,15 @@ const ProdutosPorPedido: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [novoProduto, setNovoProduto] = useState({
     nome: '',
-    quantidade: 1
+    quantidade: 1,
+    pedidoId: id
   });
 
   const carregarProdutos = useCallback(async () => {
     try {
       setLoading(true);
       const response = await pedidosApi.buscarProdutosPedido(id!);
-      console.log(response)
+      console.log("Produtos recebidos: ", response)
       setProdutos(response);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
@@ -48,7 +49,7 @@ const ProdutosPorPedido: React.FC = () => {
     e.preventDefault();
     try {
       await pedidosApi.adicionarProduto(id!, novoProduto);
-      setNovoProduto({ nome: '', quantidade: 1 });
+      setNovoProduto({ nome: '', quantidade: 1, pedidoId: id! });
       setShowForm(false);
       carregarProdutos();
     } catch (error) {
