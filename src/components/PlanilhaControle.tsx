@@ -51,6 +51,7 @@ const PlanilhaControle: React.FC = () => {
     try {
       setLoading(true);
       const response = await pedidosApi.buscarPedidos(currentPage, 25);
+      console.log(response.pedidos)
       setPedidos(response.pedidos);
       setTotalPages(response.totalPages);
     } catch (error) {
@@ -132,13 +133,37 @@ const PlanilhaControle: React.FC = () => {
           Controle de Expedição
         </h1>
         {isAuthenticated && (
-          <button
-            onClick={() => setShowNewPedidoForm(true)}
-            className="btn-primary flex items-center space-x-2"
-          >
-            <Plus size={18} />
-            <span>Novo Pedido</span>
-          </button>
+          <>
+
+            <button
+              onClick={() => setShowNewPedidoForm(true)}
+              className="btn-primary flex items-center space-x-2"
+            >
+              <Plus size={18} />
+              <span>Novo Pedido</span>
+            </button>
+            <input
+              type="file"
+              accept=".xml"
+              onChange={async (e) => {
+                if (e.target.files?.length) {
+                  const formData = new FormData();
+                  formData.append("file", e.target.files[0]);
+                  const token = localStorage.getItem("token");
+
+                  await fetch("http://localhost:5000/api/pedidos/upload-xml", {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                  });
+
+                  carregarPedidos();
+                }
+              }}
+            />
+          </>
         )}
       </div>
 
