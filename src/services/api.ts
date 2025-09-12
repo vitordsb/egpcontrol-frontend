@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Pedido, Produto, RelatorioCompra } from '../types';
 
-export const API_BASE_URL = 'https://egpcontrol-backned.onrender.com/api';
+export const API_BASE_URL = 'http://egpcontrol-backned.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

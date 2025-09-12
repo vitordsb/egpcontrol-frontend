@@ -27,6 +27,7 @@ const PlanilhaControle: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 7;
   const [filtros, setFiltros] = useState({
     geral: '',
     cliente: '',
@@ -50,8 +51,7 @@ const PlanilhaControle: React.FC = () => {
   const carregarPedidos = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(currentPage, 25);
-      console.log(response.pedidos)
+      const response = await pedidosApi.buscarPedidos(currentPage, itemsPerPage);
       setPedidos(response.pedidos);
       setTotalPages(response.totalPages);
     } catch (error) {
@@ -59,7 +59,7 @@ const PlanilhaControle: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     carregarPedidos();
@@ -68,7 +68,7 @@ const PlanilhaControle: React.FC = () => {
   const aplicarFiltro = async (column: string, value: string) => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(1, 25, value, column);
+      const response = await pedidosApi.buscarPedidos(1, itemsPerPage, value, column);
       setPedidos(response.pedidos);
       setTotalPages(response.totalPages);
       setCurrentPage(1);
