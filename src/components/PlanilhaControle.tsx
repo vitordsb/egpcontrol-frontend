@@ -32,6 +32,7 @@ const PlanilhaControle: React.FC = () => {
     cliente: '',
     numeroPedido: '',
     numeroNfe: '',
+    dataPrevista: '',
     financeira: '',
     transportadora: '',
     dataSaida: ''
@@ -42,6 +43,7 @@ const PlanilhaControle: React.FC = () => {
     cliente: '',
     numeroPedido: '',
     numeroNfe: '',
+    dataPrevista: '',
     financeira: '',
     dataSaida: '',
     transportadora: ''
@@ -50,27 +52,56 @@ const PlanilhaControle: React.FC = () => {
   //helper mostrar pedido mais atrasado até o menos atrasado
   const pedidoMaisAtrasado = useMemo(() => {
     if (!pedidos || pedidos.length === 0) return null;
-    return [...pedidos].sort((a, b) => {
-      const dataAtrasoA = new Date(a.dataPrevista);
-      const dataAtrasoB = new Date(b.dataPrevista);
-      return dataAtrasoA.getTime() - dataAtrasoB.getTime(); // do mais antigo para o mais atrasado
+    const naoSaiu = pedidos.filter(p => !(p.status || '').toLowerCase().includes('saiu'));
+    if (naoSaiu.length === 0) return null;
+
+    return [...naoSaiu].sort((a, b) => {
+      const dataAtrasoA = new Date(a.dataPrevista).getTime();
+      const dataAtrasoB = new Date(b.dataPrevista).getTime();
+      return dataAtrasoA - dataAtrasoB;
     })[0];
   }, [pedidos]);
 
   const carregarPedidos = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(currentPage, 15);
-      console.log(response.pedidos)
 
-      const pedidosOrdenados = [...response.pedidos].sort((a, b) => {
+      let page = 1;
+      const limit = 100; // maior que 15 para reduzir chamadas
+      let pedidosTotal: Pedido[] = [];
+      let totalPages = 1;
+
+      // busca todas as páginas
+      do {
+        const response = await pedidosApi.buscarPedidos(page, limit);
+        pedidosTotal = [...pedidosTotal, ...response.pedidos];
+        totalPages = response.totalPages;
+        page++;
+      } while (page <= totalPages);
+
+      // ordena a lista completa
+      const pedidosOrdenados = [...pedidosTotal].sort((a, b) => {
+        const statusOrder = (status: string) => {
+          if (status?.toLowerCase().includes('em atraso')) return 0;
+          if (status?.toLowerCase().includes('em produção')) return 1;
+          if (status?.toLowerCase().includes('saiu')) return 2;
+          return 3;
+        };
+
+        const ordemStatus = statusOrder(a.status || '') - statusOrder(b.status || '');
+        if (ordemStatus !== 0) return ordemStatus;
+
         const dataA = new Date(a.dataPrevista).getTime();
         const dataB = new Date(b.dataPrevista).getTime();
         return dataA - dataB;
       });
 
-      setPedidos(pedidosOrdenados);
-      setTotalPages(response.totalPages);
+      // aplica paginação no front
+      const start = (currentPage - 1) * 15;
+      const end = start + 15;
+
+      setPedidos(pedidosOrdenados.slice(start, end));
+      setTotalPages(Math.ceil(pedidosOrdenados.length / 15));
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
     } finally {
@@ -85,10 +116,9 @@ const PlanilhaControle: React.FC = () => {
   const aplicarFiltro = async (column: string, value: string) => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(1, 15, value, column);
+      const response = await pedidosApi.buscarPedidos(1, 100, value, column);
       setPedidos(response.pedidos);
       setTotalPages(response.totalPages);
-      setCurrentPage(1);
     } catch (error) {
       console.error('Erro ao aplicar filtro:', error);
     } finally {
@@ -269,7 +299,19 @@ const PlanilhaControle: React.FC = () => {
                     </div>
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left">Data Prevista</th>
+                <th className="px-4 py-3 text-left">
+                  <span>Data Prevista</span>
+                  <div className="relative">
+                    <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white" size={14} />
+                    <input
+                      type="date"
+                      value={searchFilters.dataPrevista}
+                      onChange={(e) => handleFilterChange('dataPrevista', e.target.value)}
+                      className="w-full pl-8 pr-2 py-1 text-xs bg-white bg-opacity-20 border border-white border-opacity-30 rounded text-white placeholder-white placeholder-opacity-70"
+                      placeholder="Filtrar..."
+                    />
+                  </div>
+                </th>
                 <th className="px-20 py-3 text-left">Situação</th>
                 <th className="px-4 py-3 text-left">
                   <div className="space-y-2">
