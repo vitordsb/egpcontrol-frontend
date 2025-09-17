@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
 
 export const pedidosApi = {
   // Buscar pedidos com paginação e filtros
-  buscarPedidos: async (page = 1, limit = 7, search = '', column = '') => {
+  buscarPedidos: async (page = 1, limit = 15, search = '', column = '') => {
     const response = await api.get('/pedidos', {
       params: { page, limit, search, column }
     });

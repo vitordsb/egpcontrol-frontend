@@ -60,7 +60,7 @@ const PlanilhaControle: React.FC = () => {
   const carregarPedidos = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(currentPage, 7);
+      const response = await pedidosApi.buscarPedidos(currentPage, 15);
       console.log(response.pedidos)
 
       const pedidosOrdenados = [...response.pedidos].sort((a, b) => {
@@ -85,7 +85,7 @@ const PlanilhaControle: React.FC = () => {
   const aplicarFiltro = async (column: string, value: string) => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(1, 7, value, column);
+      const response = await pedidosApi.buscarPedidos(1, 15, value, column);
       setPedidos(response.pedidos);
       setTotalPages(response.totalPages);
       setCurrentPage(1);
