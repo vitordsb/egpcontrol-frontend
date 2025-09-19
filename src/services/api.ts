@@ -1,5 +1,11 @@
 import axios from 'axios';
-import { Pedido, Produto, RelatorioCompra } from '../types';
+import {
+  Pedido,
+  Produto,
+  RelatorioCompra,
+  EstoqueItem,
+  EstoqueDetalhePedido
+} from '../types';
 
 export const API_BASE_URL = 'https://egpcontrol-backned.onrender.com/api';
 
@@ -18,7 +24,7 @@ api.interceptors.request.use((config) => {
 
 export const pedidosApi = {
   // Buscar pedidos com paginação e filtros
-  buscarPedidos: async (page = 1, limit = 15, search = '', column = '') => {
+  buscarPedidos: async (page = 1, limit = 9, search = '', column = '') => {
     const response = await api.get('/pedidos', {
       params: { page, limit, search, column }
     });
@@ -86,5 +92,27 @@ export const pedidosApi = {
   }
 };
 
-export default api;
+export const estoqueApi = {
+  listar: async (): Promise<EstoqueItem[]> => {
+    const resp = await api.get('/estoque');
+    return resp.data;
+  },
+  adicionarEntrada: async (payload: { nome: string; quantidade: number }) => {
+    const resp = await api.post('/estoque', payload);
+    return resp.data;
+  },
+  detalhes: async (nome: string): Promise<EstoqueDetalhePedido[]> => {
+    const resp = await api.get('/estoque/detalhes', { params: { nome } });
+    return resp.data;
+  },
+  retirar: async (payload: { nome: string; quantidade: number }) => {
+    const resp = await api.post('/estoque/retirar', payload);
+    return resp.data;
+  },
+};
+
+export default {
+  pedidosApi,
+  estoqueApi
+};
 

@@ -4,7 +4,7 @@ import Header from './components/Header';
 import PlanilhaControle from './components/PlanilhaControle';
 import Login from './components/Login';
 import ProdutosPorPedido from './components/ProdutosPorPedido';
-import RelatorioCompras from './components/RelatorioCompras';
+import Estoque from './components/Estoque';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
@@ -19,7 +19,7 @@ function App() {
               <Route path="/" element={<PlanilhaControle />} />
               <Route path="/login" element={<Login />} />
               <Route path="/pedido/:id/produtos" element={<ProdutosPorPedido />} />
-              <Route path="/relatorio-compras" element={<RelatorioCompras />} />
+              <Route path="/estoque" element={<Estoque />} />
             </Routes>
           </main>
         </div>

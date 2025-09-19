@@ -32,11 +32,11 @@ const Header: React.FC = () => {
             </Link>
 
             <Link
-              to="/relatorio-compras"
+              to="/estoque"
               className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition-colors"
             >
               <Package size={18} />
-              <span>Relatório</span>
+              <span>Estoque</span>
             </Link>
 
             {isAuthenticated ? (

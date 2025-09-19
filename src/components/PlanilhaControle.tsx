@@ -24,6 +24,7 @@ import { ptBR } from 'date-fns/locale';
 const PlanilhaControle: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [todosPedidos, setTodosPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -49,6 +50,16 @@ const PlanilhaControle: React.FC = () => {
     transportadora: ''
   });
 
+  useEffect(() => {
+    carregarPedidos();
+  }, []);
+
+  useEffect(() => {
+    const start = (currentPage - 1) * 9;
+    const end = start + 9;
+    setPedidos(todosPedidos.slice(start, end));
+  }, [currentPage, todosPedidos]);
+
   //helper mostrar pedido mais atrasado até o menos atrasado
   const pedidoMaisAtrasado = useMemo(() => {
     if (!pedidos || pedidos.length === 0) return null;
@@ -65,13 +76,11 @@ const PlanilhaControle: React.FC = () => {
   const carregarPedidos = useCallback(async () => {
     try {
       setLoading(true);
-
       let page = 1;
-      const limit = 100; // maior que 15 para reduzir chamadas
+      const limit = 90;
       let pedidosTotal: Pedido[] = [];
       let totalPages = 1;
 
-      // busca todas as páginas
       do {
         const response = await pedidosApi.buscarPedidos(page, limit);
         pedidosTotal = [...pedidosTotal, ...response.pedidos];
@@ -79,44 +88,33 @@ const PlanilhaControle: React.FC = () => {
         page++;
       } while (page <= totalPages);
 
-      // ordena a lista completa
-      const pedidosOrdenados = [...pedidosTotal].sort((a, b) => {
+      // ordena pedidos
+      const pedidosOrdenados = pedidosTotal.sort((a, b) => {
         const statusOrder = (status: string) => {
           if (status?.toLowerCase().includes('em atraso')) return 0;
           if (status?.toLowerCase().includes('em produção')) return 1;
           if (status?.toLowerCase().includes('saiu')) return 2;
           return 3;
         };
-
         const ordemStatus = statusOrder(a.status || '') - statusOrder(b.status || '');
         if (ordemStatus !== 0) return ordemStatus;
 
-        const dataA = new Date(a.dataPrevista).getTime();
-        const dataB = new Date(b.dataPrevista).getTime();
-        return dataA - dataB;
+        return new Date(a.dataPrevista).getTime() - new Date(b.dataPrevista).getTime();
       });
 
-      // aplica paginação no front
-      const start = (currentPage - 1) * 15;
-      const end = start + 15;
-
-      setPedidos(pedidosOrdenados.slice(start, end));
-      setTotalPages(Math.ceil(pedidosOrdenados.length / 15));
+      setTodosPedidos(pedidosOrdenados);
+      setTotalPages(Math.ceil(pedidosOrdenados.length / 9));
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
     } finally {
       setLoading(false);
     }
-  }, [currentPage]);
-
-  useEffect(() => {
-    carregarPedidos();
-  }, [carregarPedidos]);
+  }, []);
 
   const aplicarFiltro = async (column: string, value: string) => {
     try {
       setLoading(true);
-      const response = await pedidosApi.buscarPedidos(1, 100, value, column);
+      const response = await pedidosApi.buscarPedidos(1, 90, value, column);
       setPedidos(response.pedidos);
       setTotalPages(response.totalPages);
     } catch (error) {
@@ -134,6 +132,7 @@ const PlanilhaControle: React.FC = () => {
       carregarPedidos();
     }
   };
+
   const deletarPedido = async (pedidoId: string) => {
     try {
       await pedidosApi.excluirPedido(pedidoId);
@@ -153,8 +152,7 @@ const PlanilhaControle: React.FC = () => {
   };
   const handleUploadXml = async (file: File) => {
     try {
-      const response = await pedidosApi.enviarXML(file);
-      console.log(response);
+      await pedidosApi.enviarXML(file);
       carregarPedidos();
     } catch (error) {
       console.error("Erro ao importar XML:", error);
@@ -401,7 +399,7 @@ const PlanilhaControle: React.FC = () => {
                               atualizarStatus(pedido._id, dataSaida, observacao);
                             }
                           }}
-                          className="p-1 text-egp-pink-600 hover:bg-egp-pink-100 rounded"
+                          className="p-1 text-egp-pink-600 hover:bg-egp-pink-90 rounded"
                           title="Definir data de saída"
                         >
                           <Calendar size={14} />
@@ -414,7 +412,7 @@ const PlanilhaControle: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <Link
                           to={`/pedido/${pedido._id}/produtos`}
-                          className="p-1 text-egp-blue-600 hover:bg-egp-blue-100 rounded"
+                          className="p-1 text-egp-blue-600 hover:bg-egp-blue-90 rounded"
                           title="Gerenciar produtos"
                         >
                           <Package size={16} />
@@ -424,14 +422,14 @@ const PlanilhaControle: React.FC = () => {
 
                             <button
                               onClick={() => setEditingPedido(pedido)}
-                              className="p-1 text-egp-pink-600 hover:bg-egp-pink-100 rounded"
+                              className="p-1 text-egp-pink-600 hover:bg-egp-pink-90 rounded"
                               title="Editar pedido"
                             >
                               <Edit size={16} />
                             </button>
                             <button
                               onClick={() => deletarPedido(pedido._id || '')}
-                              className="p-1 text-red-600 hover:bg-red-100 rounded"
+                              className="p-1 text-red-600 hover:bg-red-90 rounded"
                               title="Excluir pedido"
                             >
                               <Trash size={16} />
@@ -457,7 +455,7 @@ const PlanilhaControle: React.FC = () => {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-2 flex items-center rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="p-2 flex items-center rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-90"
               >
                 <ChevronLeft size={16} />
                 Voltar

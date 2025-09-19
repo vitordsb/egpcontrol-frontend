@@ -41,3 +41,15 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+export interface EstoqueItem {
+  nome: string;
+  quantidadePedidos: number;
+  estoque: number;
+}
+export interface EstoqueDetalhePedido {
+  pedidoId: string;
+  numeroPedido?: string;
+  numeroNfe?: string;
+  dataPrevista?: string; // ISO
+  dataPedido?: string;   // ISO
+}
