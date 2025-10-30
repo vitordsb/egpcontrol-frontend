@@ -17,7 +17,7 @@ const resolveBaseUrl = () => {
     return '/api';
   }
 
-  return 'http://localhost:5000/api';
+  return 'https://egpcontrol-backned.onrender.com/api';
 };
 
 export const API_BASE_URL = resolveBaseUrl();
@@ -41,7 +41,7 @@ export const pedidosApi = {
     const response = await api.get('/pedidos', {
       params: { page, limit, search, column }
     });
-    return normalizePedidosResponse(response.data);
+    return response.data;
   },
 
   // Criar novo pedido
