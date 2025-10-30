@@ -7,7 +7,20 @@ import {
   EstoqueDetalhePedido
 } from '../types';
 
-export const API_BASE_URL = 'http://localhost:5000/api';
+const resolveBaseUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return '/api';
+  }
+
+  return 'http://localhost:5000/api';
+};
+
+export const API_BASE_URL = resolveBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -115,4 +128,3 @@ export default {
   pedidosApi,
   estoqueApi
 };
-
