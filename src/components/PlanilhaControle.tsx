@@ -21,6 +21,8 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const ITENS_POR_PAGINA = 9;
+
 const PlanilhaControle: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -28,16 +30,6 @@ const PlanilhaControle: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filtros, setFiltros] = useState({
-    geral: '',
-    cliente: '',
-    numeroPedido: '',
-    numeroNfe: '',
-    dataPrevista: '',
-    financeira: '',
-    transportadora: '',
-    dataSaida: ''
-  });
   const [showNewPedidoForm, setShowNewPedidoForm] = useState(false);
   const [editingPedido, setEditingPedido] = useState<Pedido | null>(null);
   const [searchFilters, setSearchFilters] = useState({
@@ -54,11 +46,56 @@ const PlanilhaControle: React.FC = () => {
     carregarPedidos();
   }, []);
 
+  const pedidosFiltrados = useMemo(() => {
+    if (!todosPedidos.length) return [];
+
+    return todosPedidos.filter((pedido) => {
+      const comparaTexto = (valor?: string, filtro?: string) => {
+        if (!filtro) return true;
+        return (valor || '').toLowerCase().includes(filtro.toLowerCase());
+      };
+
+      const comparaData = (valor?: string, filtro?: string) => {
+        if (!filtro) return true;
+        if (!valor) return false;
+        const data = new Date(valor);
+        if (Number.isNaN(data.getTime())) return false;
+        const dataNormalizada = format(data, 'yyyy-MM-dd');
+        return dataNormalizada === filtro;
+      };
+
+      const comparaDataSaida = (valor?: string, filtro?: string) => {
+        if (!filtro) return true;
+        if (!valor) return false;
+        const data = new Date(valor);
+        if (Number.isNaN(data.getTime())) return false;
+        const dataFormatada = format(data, 'dd/MM/yyyy');
+        return dataFormatada.includes(filtro);
+      };
+
+      return (
+        comparaTexto(pedido.cliente, searchFilters.cliente) &&
+        comparaTexto(pedido.numeroPedido, searchFilters.numeroPedido) &&
+        comparaTexto(pedido.numeroNfe, searchFilters.numeroNfe) &&
+        comparaTexto(pedido.financeira, searchFilters.financeira) &&
+        comparaTexto(pedido.transportadora, searchFilters.transportadora) &&
+        comparaData(pedido.dataPrevista, searchFilters.dataPrevista) &&
+        comparaDataSaida(pedido.dataSaida, searchFilters.dataSaida)
+      );
+    });
+  }, [todosPedidos, searchFilters]);
+
   useEffect(() => {
-    const start = (currentPage - 1) * 9;
-    const end = start + 9;
-    setPedidos(todosPedidos.slice(start, end));
-  }, [currentPage, todosPedidos]);
+    const total = Math.max(1, Math.ceil(pedidosFiltrados.length / ITENS_POR_PAGINA));
+    setTotalPages(total);
+    setCurrentPage((prev) => Math.min(prev, total));
+  }, [pedidosFiltrados]);
+
+  useEffect(() => {
+    const start = (currentPage - 1) * ITENS_POR_PAGINA;
+    const end = start + ITENS_POR_PAGINA;
+    setPedidos(pedidosFiltrados.slice(start, end));
+  }, [currentPage, pedidosFiltrados]);
 
   //helper mostrar pedido mais atrasado até o menos atrasado
   const pedidoMaisAtrasado = useMemo(() => {
@@ -103,7 +140,6 @@ const PlanilhaControle: React.FC = () => {
       });
 
       setTodosPedidos(pedidosOrdenados);
-      setTotalPages(Math.ceil(pedidosOrdenados.length / 9));
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
     } finally {
@@ -111,26 +147,9 @@ const PlanilhaControle: React.FC = () => {
     }
   }, []);
 
-  const aplicarFiltro = async (column: string, value: string) => {
-    try {
-      setLoading(true);
-      const response = await pedidosApi.buscarPedidos(1, 90, value, column);
-      setPedidos(response.pedidos);
-      setTotalPages(response.totalPages);
-    } catch (error) {
-      console.error('Erro ao aplicar filtro:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleFilterChange = (column: string, value: string) => {
     setSearchFilters(prev => ({ ...prev, [column]: value }));
-    if (value.trim()) {
-      aplicarFiltro(column, value);
-    } else {
-      carregarPedidos();
-    }
+    setCurrentPage(1);
   };
 
   const deletarPedido = async (pedidoId: string) => {
@@ -491,5 +510,3 @@ const PlanilhaControle: React.FC = () => {
 };
 
 export default PlanilhaControle;
-
-
