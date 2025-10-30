@@ -26,6 +26,53 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+type PedidosResponse = {
+  pedidos: Pedido[];
+  totalPages: number;
+  currentPage?: number;
+  total?: number;
+};
+
+const normalizePedidosResponse = (payload: unknown): PedidosResponse => {
+  if (!payload) {
+    return { pedidos: [], totalPages: 1 };
+  }
+
+  // Quando a API retorna diretamente o array de pedidos
+  if (Array.isArray(payload)) {
+    return { pedidos: payload, totalPages: 1 };
+  }
+
+  if (typeof payload === 'object') {
+    const dataObj = payload as Record<string, any>;
+    const nestedData = dataObj.data;
+
+    if (nestedData && typeof nestedData === 'object') {
+      const nestedPedidos = Array.isArray(nestedData.pedidos) ? nestedData.pedidos : [];
+      const nestedTotalPages = Number(nestedData.totalPages) || 1;
+      if (nestedPedidos.length > 0 || nestedTotalPages !== 1) {
+        return {
+          pedidos: nestedPedidos,
+          totalPages: nestedTotalPages,
+          currentPage: Number(nestedData.currentPage) || undefined,
+          total: Number(nestedData.total) || undefined,
+        };
+      }
+    }
+
+    if (Array.isArray(dataObj.pedidos)) {
+      return {
+        pedidos: dataObj.pedidos,
+        totalPages: Number(dataObj.totalPages) || 1,
+        currentPage: Number(dataObj.currentPage) || undefined,
+        total: Number(dataObj.total) || undefined,
+      };
+    }
+  }
+
+  return { pedidos: [], totalPages: 1 };
+};
+
 // Interceptor para adicionar token de autenticação
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -41,7 +88,7 @@ export const pedidosApi = {
     const response = await api.get('/pedidos', {
       params: { page, limit, search, column }
     });
-    return response.data;
+    return normalizePedidosResponse(response.data);
   },
 
   // Criar novo pedido
